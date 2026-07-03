@@ -1,0 +1,199 @@
+<section id="login-section" class="min-h-screen bg-slate-50 relative overflow-hidden flex items-center">
+  <div class="absolute inset-0 z-0">
+    <div class="absolute top-20 left-10 w-72 h-72 bg-cyan-500/10 rounded-full blur-[100px]"></div>
+    <div class="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px]"></div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center min-h-[calc(100vh-8rem)]">
+
+        <!-- Left Column - Form -->
+        <div class="w-full max-w-md mx-auto lg:max-w-lg">
+            <div class="text-center lg:text-left mb-8">
+                <h1 class="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
+                    Accede a tu Portal
+                </h1>
+                <p class="text-lg text-slate-600">
+                    Gestiona tus citas médicas y accede al historial clínico de tus pacientes de forma segura.
+                </p>
+            </div>
+
+            <!-- Login Form -->
+            <div id="login-form" class="bg-white rounded-3xl border border-slate-200 shadow-xl p-8">
+              <div class="mb-6">
+                  <h2 class="text-xl font-semibold text-slate-900 mb-2">Iniciar Sesión</h2>
+                  <p class="text-sm text-slate-600">Ingresa tus credenciales para continuar</p>
+              </div>
+
+              <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="space-y-6">
+
+                  <div *ngIf="errorMessage()" class="p-3 text-xs text-red-600 bg-red-50 border border-red-100 rounded-xl animate-pulse">
+                      <i class="fa-solid fa-triangle-exclamation mr-2"></i>
+                      Correo o contraseña incorrectos.
+                  </div>
+
+                  <div>
+                      <label for="email" class="block text-sm font-medium text-slate-700 mb-2">
+                          Correo Electrónico
+                      </label>
+                      <div class="relative">
+                          <i class="fa-solid fa-envelope absolute left-4 top-3.5 text-slate-400"></i>
+                          <input
+                              type="email"
+                              id="email"
+                              formControlName="email"
+                              class="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                              [ngClass]="{'border-red-400': loginForm.get('email')?.touched && loginForm.get('email')?.invalid}"
+                              placeholder="tu@email.com"
+                          >
+                      </div>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Contraseña</label>
+                    <div class="relative">
+                      <i class="fa-solid fa-lock absolute left-4 top-3.5 text-slate-400"></i>
+                      <input [type]="showPassword ? 'text' : 'password'" formControlName="password"
+                             class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-12 focus:ring-2 focus:ring-cyan-500 outline-none transition-all"
+                             placeholder="••••••••">
+                      <button type="button" (click)="showPassword = !showPassword" class="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid" [class.fa-eye]="!showPassword" [class.fa-eye-slash]="showPassword"></i>
+                      </button>
+                    </div>
+                  </div>
+
+
+                  <div class="flex items-center justify-between">
+                      <div class="flex items-center">
+                          <input
+                              id="remember-me"
+                              type="checkbox"
+                              class="h-4 w-4 text-primary focus:ring-primary border-slate-300 rounded"
+                          >
+                          <label for="remember-me" class="ml-2 block text-sm text-slate-700">
+                              Recordarme
+                          </label>
+                      </div>
+                      <a href="#" class="text-sm text-primary hover:text-primary-dark transition-colors font-medium">
+                          ¿Olvidaste tu contraseña?
+                      </a>
+                  </div>
+
+                  <button
+                      type="submit"
+                      [disabled]="isLoading() || loginForm.invalid"
+                      class="w-full bg-linear-to-r from-primary to-accent hover:from-primary-dark hover:to-accent-dark text-white rounded-xl px-6 py-3 font-medium transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                      <i *ngIf="!isLoading()" class="fa-solid fa-sign-in-alt"></i>
+                      <i *ngIf="isLoading()" class="fa-solid fa-circle-notch animate-spin"></i>
+                      {{ isLoading() ? 'Verificando...' : 'Iniciar Sesión' }}
+                  </button>
+              </form>
+
+              </div>
+
+            <!-- Security Notice -->
+            <div class="mt-6 bg-slate-50 border border-slate-200 rounded-2xl p-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <i class="fa-solid fa-shield-halved text-primary"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-medium text-slate-900">Conexión Segura</h4>
+                        <p class="text-xs text-slate-600">Tus datos están protegidos con encriptación de extremo a extremo.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Medical Image -->
+        <div class="hidden lg:flex items-center justify-center">
+          <div class="relative w-full max-w-lg">
+              <div class="relative">
+                  <div class="aspect-4/5 rounded-3xl overflow-hidden shadow-2xl shadow-slate-900/10 bg-linear-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+                      <div class="text-center p-12">
+                          <div class="mx-auto mb-8 rounded-3xl flex items-center justify-center shadow-2xl shadow-blue-600/30">
+                              <img src="logo-omnisalud.png" alt="Logo Omnisalud" class=" object-contain">
+                          </div>
+
+                          <div class="flex items-center justify-center gap-4 flex-wrap">
+                              <div class="flex items-center gap-2 bg-white rounded-full px-4 py-2 shadow-md">
+                                  <i class="fa-solid fa-lock text-blue-600"></i>
+                                  <span class="text-sm font-medium text-slate-700">ISO 27001</span>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+
+                  <div class="absolute -top-6 -right-6 bg-white rounded-2xl p-4 shadow-xl border border-slate-200">
+                      <div class="text-center">
+                          <div class="text-2xl font-bold text-blue-600 mb-1">+500</div>
+                          <div class="text-xs text-slate-600">Atenciones/Mes</div>
+                      </div>
+                  </div>
+
+                  <div class="absolute -bottom-6 -left-6 bg-white rounded-2xl p-4 shadow-xl border border-slate-200">
+                      <div class="flex items-center gap-3">
+                          <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                              <i class="fa-solid fa-laptop-medical text-blue-600"></i>
+                          </div>
+                          <div>
+                              <div class="text-sm font-medium text-slate-900">Ficha Digital</div>
+                              <div class="text-xs text-slate-600">100% Sincronizada</div>
+                          </div>
+                      </div>
+                  </div>
+
+                  <div class="absolute top-1/3 -left-8 bg-white rounded-2xl p-3 shadow-xl border border-slate-200">
+                      <div class="flex items-center gap-2">
+                          <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
+                              <i class="fa-solid fa-tooth text-blue-600 text-sm"></i>
+                          </div>
+                          <div>
+                              <div class="text-xs font-medium text-slate-900">Control Dental</div>
+                              <div class="text-xs text-slate-500">Especializado</div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+
+              <div class="absolute -z-10 top-10 left-10 w-32 h-32 bg-blue-600/5 rounded-full blur-xl"></div>
+              <div class="absolute -z-10 bottom-10 right-10 w-24 h-24 bg-blue-400/10 rounded-full blur-xl"></div>
+          </div>
+      </div>
+    </div>
+</div>
+</section>
+
+<!-- Features Banner -->
+<section id="features-banner" class="py-12 bg-white border-t border-slate-100">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+          <div class="flex flex-col items-center group">
+              <div class="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mb-4 transition-colors group-hover:bg-blue-100">
+                  <i class="fa-solid fa-clock-rotate-left text-2xl text-blue-600"></i>
+              </div>
+              <h3 class="font-bold text-slate-900 mb-2">Control de Citas</h3>
+              <p class="text-sm text-slate-600 px-4">Visualiza y gestiona la agenda semanal de la sede Chillán en tiempo real.</p>
+          </div>
+
+          <div class="flex flex-col items-center group">
+              <div class="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mb-4 transition-colors group-hover:bg-blue-100">
+                  <i class="fa-solid fa-notes-medical text-2xl text-blue-600"></i>
+              </div>
+              <h3 class="font-bold text-slate-900 mb-2">Ficha Clínica Digital</h3>
+              <p class="text-sm text-slate-600 px-4">Acceso rápido al historial, evolución y odontograma de cada paciente.</p>
+          </div>
+
+          <div class="flex flex-col items-center group">
+              <div class="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mb-4 transition-colors group-hover:bg-blue-100">
+                  <i class="fa-solid fa-user-plus text-2xl text-blue-600"></i>
+              </div>
+              <h3 class="font-bold text-slate-900 mb-2">Admisión Inteligente</h3>
+              <p class="text-sm text-slate-600 px-4">Registra pacientes nuevos al momento de agendar de forma automática.</p>
+          </div>
+      </div>
+  </div>
+</section>

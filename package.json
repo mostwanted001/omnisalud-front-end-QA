@@ -4,7 +4,12 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "start:qa": "ng serve --configuration qa",
+    "tailwind:watch": "npx tailwindcss -i ./src/styles.css -o ./src/styles-compiled.css --watch",
     "build": "ng build",
+    "build:prod": "ng build --configuration production",
+    "tailwind:build": "npx tailwindcss -i ./src/styles.css -o ./src/styles-compiled.css",
+    "build:qa": "npm run tailwind:build && ng build --configuration qa",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
@@ -24,8 +29,12 @@
     "@angular/build": "^22.0.5",
     "@angular/cli": "^22.0.5",
     "@angular/compiler-cli": "^22.0.0",
+    "@tailwindcss/cli": "^4.3.2",
+    "@tailwindcss/postcss": "^4.3.2",
+    "@types/node": "^26.1.0",
     "jsdom": "^28.0.0",
     "prettier": "^3.8.1",
+    "tailwindcss": "^4.3.2",
     "typescript": "~6.0.2",
     "vitest": "^4.0.8"
   }

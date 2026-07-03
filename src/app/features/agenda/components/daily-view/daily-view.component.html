@@ -1,0 +1,392 @@
+<div class="flex gap-8 items-start p-6 bg-slate-50/50 min-h-screen">
+
+  <!-- BARRA LATERAL IZQUIERDA: NAVEGACIÓN Y FILTROS -->
+  <aside class="w-72 flex flex-col items-center sticky top-6">
+
+    <!-- Selector de Fecha (Estilo Captura 23:52) -->
+    <div class="flex flex-col items-center mb-8 bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm w-full">
+      <span class="text-lg font-medium text-slate-500 capitalize mb-1">
+        {{ selectedDate() | date:'EEEE':'':'es' }}
+      </span>
+
+      <div class="flex items-center gap-6 my-2">
+        <button (click)="changeDate(-1)"
+                class="text-slate-900 hover:text-blue-600 hover:scale-125 transition-all p-2">
+          <i class="fa-solid fa-chevron-left text-2xl"></i>
+        </button>
+
+        <h2 class="text-7xl font-black text-slate-800 tracking-tighter leading-none select-none">
+          {{ selectedDate() | date:'dd' }}
+        </h2>
+
+        <button (click)="changeDate(1)"
+                class="text-slate-900 hover:text-blue-600 hover:scale-125 transition-all p-2">
+          <i class="fa-solid fa-chevron-right text-2xl"></i>
+        </button>
+      </div>
+
+      <span class="text-xl font-normal text-slate-700 capitalize tracking-tight">
+        {{ selectedDate() | date:'MMMM yyyy':'':'es' }}
+      </span>
+    </div>
+
+    <!-- Checklist de Estados -->
+    <div class="w-full px-4 space-y-4">
+      <div class="flex items-center gap-3 group cursor-pointer">
+        <div class="w-4 h-4 rounded border-2 border-blue-600 flex items-center justify-center bg-blue-50">
+          <i class="fa-solid fa-check text-[10px] text-blue-600"></i>
+        </div>
+        <span class="text-[11px] font-black text-blue-600 uppercase tracking-tighter group-hover:underline">Marcar todos</span>
+      </div>
+
+      <hr class="border-slate-200/60 my-4">
+
+      <div class="flex flex-col gap-3">
+        @for (filtro of [
+          {t: 'Notificado por WhatsApp', c: true},
+          {t: 'Confirmado por Whatsapp', c: true},
+          {t: 'No confirmado', c: false},
+          {t: 'Agenda Online', c: true},
+          {t: 'Notificado vía email', c: false}
+        ]; track filtro.t) {
+          <label class="flex items-center gap-3 cursor-pointer group">
+            <input type="checkbox" [checked]="filtro.c" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 transition-all">
+            <span class="text-[11px] font-bold text-slate-500 group-hover:text-slate-800 transition-colors">{{ filtro.t }}</span>
+          </label>
+        }
+      </div>
+    </div>
+  </aside>
+
+  <!-- ÁREA PRINCIPAL: BUSCADOR + TABLA -->
+  <main class="flex-1 space-y-6">
+
+    <!-- Buscador Superior y Botón Nueva Cita -->
+    <div class="flex gap-4 items-center">
+      <div class="relative flex-1">
+        <i class="fa-solid fa-magnifying-glass absolute left-5 top-1/2 -translate-y-1/2 text-blue-500 text-sm"></i>
+        <input type="text"
+         [ngModel]="searchTerm()"
+         (ngModelChange)="searchTerm.set($event)"
+         placeholder="Buscar nombre del paciente, RUT en las citas de hoy..."
+         class="w-full bg-white border border-slate-200 rounded-[1.25rem] py-4 pl-14 pr-6 text-sm outline-none focus:border-blue-500 transition-all shadow-sm">
+      </div>
+
+      <button (click)="openAtencion()" class="bg-[#2563eb] text-white px-8 py-4 rounded-[1.25rem] text-[11px] font-black uppercase tracking-[0.15em] shadow-xl shadow-blue-100 hover:bg-blue-700 hover:scale-105 active:scale-95 transition-all flex items-center gap-3 shrink-0">
+        <i class="fa-solid fa-plus text-xs"></i>
+        Nueva Cita
+      </button>
+    </div>
+
+    <!-- TABLA DE CITAS (TU ESTRUCTURA RESCATADA) -->
+    <div class="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm ">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-slate-50/50 border-b border-slate-100">
+            <th class="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Hora</th>
+            <th class="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Paciente</th>
+            <th class="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Doctor</th>
+            <th class="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Estado de la cita</th>
+            <th class="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Situación</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (cita of atencionesFiltradas(); track cita.id) {
+            <tr class="group hover:bg-slate-50/30 transition-all border-b border-slate-50 last:border-0">
+
+              <!-- HORA -->
+              <td class="p-6">
+                <div class="w-20 py-2.5 rounded-2xl flex flex-col items-center justify-center font-black bg-blue-100 text-blue-600 transition-transform group-hover:scale-110">
+                  <span class="text-[12px] leading-none">{{cita.hora}}</span>
+                  <i class="fa-solid fa-arrow-down text-[8px] my-1 opacity-40"></i>
+                  <span class="text-[13px] leading-none">{{ getHoraFin(cita.hora, cita.duracion) }}</span>
+                </div>
+              </td>
+
+              <!-- PACIENTE -->
+              <td class="p-6">
+                <div class="flex flex-col gap-1.5">
+                  <div class="flex items-center gap-2">
+                    <h4 class="text-[15px] font-black text-blue-600 uppercase italic tracking-tighter hover:underline cursor-pointer leading-none">
+                      {{ cita.paciente?.user?.fullName }}
+                    </h4>
+                    <i class="fa-solid fa-comment-dots text-blue-400 text-[10px]"></i>
+                  </div>
+
+                  <div class="flex flex-col gap-0.5">
+                    <div class="flex items-center gap-2">
+                      <i class="fa-solid fa-address-card text-[10px] text-slate-300"></i>
+                      <span class="text-[11px] text-slate-500 font-bold tracking-tight">{{ cita.paciente?.rut }}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <i class="fa-solid fa-location-dot text-[10px] text-slate-300"></i>
+                      <span class="text-[10px] text-slate-400 font-medium italic">{{ cita.paciente?.comuna }}, {{ cita.paciente?.ciudad }}</span>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-3 mt-1">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-tighter bg-slate-100 px-2 py-0.5 rounded-md">
+                      BOX {{ cita.dentista?.boxAsignado || 1 }}
+                    </p>
+                    @if (cita.paciente?.alergias) {
+                      <span class="text-[9px] text-rose-500 font-black uppercase flex items-center gap-1 animate-pulse">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Alergias: {{ cita.paciente.alergias }}
+                      </span>
+                    }
+                  </div>
+                </div>
+              </td>
+
+              <!-- DOCTOR -->
+              <td class="p-6">
+                <div class="flex flex-col gap-1">
+                  <p class="text-[11px] font-black uppercase tracking-tight text-slate-700 leading-tight">
+                    Dr(a). {{ cita.dentista?.user?.fullName }}
+                  </p>
+                  <span class="text-[9px] text-slate-400 font-bold italic uppercase tracking-wider">{{ cita.dentista?.especialidad }}</span>
+                </div>
+              </td>
+
+              <!-- ESTADO -->
+              <td class="p-6">
+                <div class="relative inline-block text-left group">
+
+                  <div [ngClass]="getEstadoEstilos(cita.status)"
+                       class="inline-flex items-center gap-2 cursor-pointer px-3 py-2 rounded-xl transition-all border shadow-sm">
+                    <span class="text-[11px] font-black uppercase tracking-widest italic leading-none">
+                      {{ cita.status || 'No confirmado' }}
+                    </span>
+                    <i class="fa-solid fa-chevron-down text-[9px]"></i>
+                  </div>
+
+                  <div class="absolute left-0 mt-1 w-56 rounded-xl bg-white shadow-xl border border-slate-100 z-50 hidden group-hover:block divide-y divide-slate-100">
+
+                    <div class="py-1.5 flex flex-col">
+                      <button
+                        class="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition-colors font-medium cursor-pointer">
+                        <i class="fa-solid fa-envelope text-blue-500 text-sm w-4"></i> Notificar por e-mail
+                      </button>
+
+                      <button
+                        class="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition-colors font-medium">
+                        <i class="fa-brands fa-whatsapp text-green-500 text-sm w-4"></i> Contactar por WhatsApp
+                      </button>
+                    </div>
+
+                    <div class="py-1.5 flex flex-col">
+                      <button (click)="cambiarEstadoCita(cita, 'Atendido')"
+                              class="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 font-medium transition-colors">
+                        Atendido
+                      </button>
+                      <button (click)="cambiarEstadoCita(cita, 'Atendiéndose')"
+                              class="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-blue-50 hover:text-blue-700 font-medium transition-colors">
+                        Atendiéndose
+                      </button>
+                      <button (click)="cambiarEstadoCita(cita, 'Confirmado por teléfono')"
+                              class="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-cyan-50 hover:text-cyan-700 font-medium transition-colors">
+                        Confirmado por teléfono
+                      </button>
+                      <button (click)="cambiarEstadoCita(cita, 'En sala de espera')"
+                              class="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-amber-50 hover:text-amber-700 font-medium transition-colors">
+                        En sala de espera
+                      </button>
+                      <button (click)="cambiarEstadoCita(cita, 'No asiste')"
+                              class="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-rose-50 hover:text-rose-700 font-medium transition-colors">
+                        No asiste
+                      </button>
+                      <button (click)="cambiarEstadoCita(cita, 'No confirmado')"
+                              class="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-100 font-medium transition-colors">
+                        No confirmado
+                      </button>
+                    </div>
+
+                    <div class="py-1.5">
+                      <button (click)="cambiarEstadoCita(cita, 'Anulado')"
+                              class="w-full text-left px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 font-bold transition-colors">
+                        Anulado
+                      </button>
+
+                      <button
+                        class="w-full text-left px-4 py-2 text-xs text-slate-500 hover:bg-slate-50 transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-slate-400"></i> Ver historial de confirmaciones
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+              </td>
+
+              <!-- SITUACIÓN -->
+              <td class="p-6 text-right">
+                <span class="px-6 py-3 rounded-[1.25rem] text-[10px] font-black uppercase tracking-[0.1em] inline-flex items-center gap-2 shadow-sm
+                      {{ cita.pagado ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white' }}">
+                  <i class="fa-solid" [class.fa-check]="cita.pagado" [class.fa-triangle-exclamation]="!cita.pagado"></i>
+                  {{ cita.pagado ? 'Diagnóstico' : 'Deudas' }}
+                </span>
+              </td>
+
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="p-32 text-center">
+                <div class="flex flex-col items-center opacity-20">
+                  <i class="fa-solid fa-calendar-day text-7xl mb-4"></i>
+                  <p class="text-sm font-black uppercase tracking-widest">No hay citas para este día en Chillán</p>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</div>
+
+
+<!-- Modal de Agendar Nueva Cita -->
+@if (showAtencionModal()) {
+  <div class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+    <div class="w-full max-w-6xl bg-white rounded-[32px] shadow-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[95vh]">
+
+      <div class="px-8 py-5 border-b border-slate-50 flex justify-between items-center bg-slate-50/50 shrink-0">
+        <div>
+          <h3 class="text-lg font-black text-slate-800 uppercase tracking-tighter">Agendamiento de Cita</h3>
+          <p class="text-[10px] text-[#2563eb] font-bold uppercase tracking-widest">Sede Chillán / {{ selectedDate() | date:'EEEE dd MMMM' }}</p>
+        </div>
+        <button (click)="closeModal()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 transition-colors">
+          <i class="fa-solid fa-xmark text-slate-500"></i>
+        </button>
+      </div>
+
+      <div class="flex flex-col md:flex-row overflow-hidden">
+
+
+
+        <div class="w-full md:w-[40%] p-8 bg-slate-50/50 border-r border-slate-50 overflow-y-auto">
+
+          <div class="mb-8">
+            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 ml-1">1. Seleccione el Día</label>
+            <div class="relative">
+              <input type="date" [(ngModel)]="nuevaCita.fecha"
+                     (change)="onFechaChange()"
+                     class="w-full bg-white border border-slate-100 p-4 rounded-2xl text-sm font-bold focus:border-[#2563eb] outline-none shadow-sm appearance-none transition-all">
+              <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#2563eb]">
+                <i class="fa-solid fa-calendar-day"></i>
+              </div>
+            </div>
+          </div>
+
+
+          <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-4 ml-1">1. Seleccione Horario</label>
+          <div class="grid grid-cols-3 gap-3">
+            @for (hora of bloquesHorarios(); track hora) {
+              <button (click)="nuevaCita.hora = hora"
+                      [class]="nuevaCita.hora === hora ? 'bg-[#2563eb] text-white border-[#2563eb] shadow-lg shadow-blue-100' : 'bg-white text-slate-600 border-slate-100 hover:border-blue-200'"
+                      class="py-3 rounded-2xl border-2 text-xs font-black transition-all">
+                {{ hora }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="w-full md:w-[60%] p-8 overflow-y-auto bg-white space-y-6">
+
+          <div class="flex flex-col gap-2">
+            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">2. Identificación</label>
+            <div class="flex p-1 bg-slate-100 rounded-2xl">
+              <button (click)="esNuevo.set(false)"
+                      [class.bg-white]="!esNuevo()" [class.text-[#2563eb]]="!esNuevo()"
+                      class="flex-1 py-3 text-[10px] font-black uppercase rounded-xl transition-all">Registrado</button>
+              <button (click)="esNuevo.set(true)"
+                      [class.bg-white]="esNuevo()" [class.text-[#2563eb]]="esNuevo()"
+                      class="flex-1 py-3 text-[10px] font-black uppercase rounded-xl transition-all">Nuevo</button>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">3. Duración de la Atención</label>
+            <div class="relative">
+              <select [(ngModel)]="nuevaCita.duracion"
+                      class="w-full bg-slate-50 border border-slate-100 p-4 rounded-2xl text-sm font-bold focus:bg-white focus:border-[#2563eb] outline-none transition-all appearance-none cursor-pointer">
+                <option value="15">15 minutos (Control)</option>
+                <option value="30" selected>30 minutos (Estándar)</option>
+                <option value="45">45 minutos (Intervención)</option>
+                <option value="60">1 hora (Complejo)</option>
+                <option value="90">1 hora 30 min (Cirugía)</option>
+              </select>
+              <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                <i class="fa-regular fa-clock text-xs"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            @if (!esNuevo()) {
+              <div class="flex flex-col gap-2">
+                <select [(ngModel)]="nuevaCita.pacienteId"
+                        class="w-full bg-slate-50 border border-slate-100 p-4 rounded-2xl text-sm font-bold focus:border-[#2563eb] outline-none">
+                  <option value="">Buscar en base de datos...</option>
+                  @for (p of pacientes(); track p.id) {
+                    <option [value]="p.id">{{ p.user?.fullName }} ({{ p.rut }})</option>
+                  }
+                </select>
+              </div>
+            } @else {
+              <div class="grid grid-cols-2 gap-4">
+                <input type="text" placeholder="Nombre Completo" class="w-full bg-slate-50 border border-slate-100 p-4 rounded-2xl text-sm font-bold outline-none focus:border-[#2563eb]">
+                <input type="text" placeholder="RUT" class="w-full bg-slate-50 border border-slate-100 p-4 rounded-2xl text-sm font-bold outline-none focus:border-[#2563eb]">
+              </div>
+            }
+
+            <div class="flex flex-col gap-2">
+              <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Motivo de la Cita</label>
+              <textarea [(ngModel)]="nuevaCita.motivo" rows="4" placeholder="Ej: Urgencia dolor molar..."
+                        class="w-full bg-slate-50 border border-slate-100 p-4 rounded-2xl text-sm font-bold resize-none outline-none focus:border-[#2563eb]"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-8 border-t border-slate-50 bg-slate-50/30 flex items-center justify-between shrink-0">
+        <div class="flex flex-col">
+          <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Resumen</span>
+          <p class="text-sm font-bold text-slate-700">
+            {{ nuevaCita.hora || '--:--' }} | {{ esNuevo() ? 'Paciente Nuevo' : 'Paciente Registrado' }}
+          </p>
+        </div>
+        <div class="flex gap-4">
+          <button (click)="closeModal()" class="px-8 py-4 text-xs font-black uppercase text-slate-400">Cancelar</button>
+          <button (click)="savedAtencion()"
+                  [disabled]="!nuevaCita.hora || (!nuevaCita.pacienteId && !esNuevo())"
+                  class="bg-[#2563eb] px-10 py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-white shadow-xl shadow-blue-100 hover:bg-blue-600 disabled:opacity-30 transition-all">
+            Confirmar Cita
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+@if (atencionesService.notification().show) {
+  <div class="fixed bottom-10 right-10 z-[100] animate-in slide-in-from-right duration-300">
+    <div class="bg-white border-l-4 border-[#00a79d] shadow-2xl rounded-2xl p-5 flex items-center gap-4 min-w-[320px]">
+      <!-- Icono de Check con el turquesa de tu logo -->
+      <div class="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center text-[#00a79d]">
+        <i class="fa-solid fa-circle-check text-xl"></i>
+      </div>
+
+      <div class="flex flex-col">
+        <span class="text-xs font-black text-slate-400 uppercase tracking-widest">Éxito</span>
+        <p class="text-sm font-bold text-slate-700">
+          {{ atencionesService.notification().message }}
+        </p>
+      </div>
+
+      <button (click)="atencionesService.notification.set({message:'', show:false})"
+              class="ml-auto text-slate-300 hover:text-slate-500 transition-colors">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  </div>
+}
