@@ -14,7 +14,7 @@ steps:
     entrypoint: 'npm'
     args: ['run', 'build:qa']
 
-  # 4. Desplegar al servidor vía SSH/Rsync
+  # 4. Desplegar al servidor vía SSH/Rsyn
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     secretEnv: ['SSH_KEY']
     entrypoint: 'bash'
