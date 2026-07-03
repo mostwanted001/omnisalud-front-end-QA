@@ -1,0 +1,40 @@
+steps:
+  # 1. Instalar dependencias
+  - name: 'node:22'
+    entrypoint: 'npm'
+    args: ['install']
+
+  # 2. Generar CSS de Tailwind
+  - name: 'node:22'
+    entrypoint: 'npx'
+    args: ['tailwindcss', '-i', './src/styles.css', '-o', './src/styles-compiled.css', '--minify']
+
+  # 3. Compilar Angular en modo QA
+  - name: 'node:22'
+    entrypoint: 'npm'
+    args: ['run', 'build:qa']
+
+  # 4. Desplegar al servidor vía SSH/Rsync
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    secretEnv: ['SSH_KEY']
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        apt-get update && apt-get install -y rsync openssh-client
+        mkdir -p /root/.ssh
+        echo "$$SSH_KEY" > /root/.ssh/id_rsa
+        chmod 600 /root/.ssh/id_rsa
+        ssh-keyscan 34.176.181.201 >> /root/.ssh/known_hosts
+
+        # Limpiamos la carpeta en el servidor antes de copiar
+        ssh -i /root/.ssh/id_rsa -o StrictHostKeyChecking=no enriquealexis00001@34.176.181.201 \
+        "rm -rf /var/www/clinicaglow/*"
+
+        # Sincronizamos la nueva build desde dist/omnisalud/browser/
+        rsync -avz --delete -e "ssh -i /root/.ssh/id_rsa -o StrictHostKeyChecking=no" dist/omnisalud/browser/ enriquealexis00001@34.176.181.201:/var/www/clinicaglow/
+
+availableSecrets:
+  secretManager:
+  - versionName: projects/omnisalud-496121/secrets/SSH_KEY_BACKEND/versions/latest
+    env: 'SSH_KEY'
