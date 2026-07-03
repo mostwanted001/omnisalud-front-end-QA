@@ -14,7 +14,7 @@ steps:
     entrypoint: 'npm'
     args: ['run', 'build:qa']
 
-  # 4. Desplegar al servidor vía SSH/Rsyn
+  # 4. Desplegar al servidor vía SSH/Rsync
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     secretEnv: ['SSH_KEY']
     entrypoint: 'bash'
@@ -31,10 +31,13 @@ steps:
         ssh -i /root/.ssh/id_rsa -o StrictHostKeyChecking=no enriquealexis00001@34.176.181.201 \
         "rm -rf /var/www/clinicaglow/*"
 
-        # Sincronizamos la nueva build desde dist/omnisalud/browser/
+        # Sincronizamos la nueva build
         rsync -avz --delete -e "ssh -i /root/.ssh/id_rsa -o StrictHostKeyChecking=no" dist/omnisalud/browser/ enriquealexis00001@34.176.181.201:/var/www/clinicaglow/
 
 availableSecrets:
   secretManager:
   - versionName: projects/omnisalud-496121/secrets/SSH_KEY_BACKEND/versions/latest
     env: 'SSH_KEY'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
