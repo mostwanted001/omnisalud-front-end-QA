@@ -29,10 +29,10 @@ steps:
 
         # Limpiamos la carpeta en el servidor antes de copiar
         ssh -i /root/.ssh/id_rsa -o StrictHostKeyChecking=no enriquealexis00001@34.176.181.201 \
-        "rm -rf /var/www/clinicaglow/*"
+        "rm -rf /var/www/omnisalud-qa/*"
 
         # Sincronizamos la nueva build
-        rsync -avz --delete -e "ssh -i /root/.ssh/id_rsa -o StrictHostKeyChecking=no" dist/omnisalud/browser/ enriquealexis00001@34.176.181.201:/var/www/clinicaglow/
+        rsync -avz --delete -e "ssh -i /root/.ssh/id_rsa -o StrictHostKeyChecking=no" dist/omnisalud/browser/ enriquealexis00001@34.176.181.201:/var/www/omnisalud-qa/
 
 availableSecrets:
   secretManager:
